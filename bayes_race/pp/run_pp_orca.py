@@ -17,12 +17,12 @@ from bayes_race.pp import purePursuit
 #####################################################################
 # settings
 
-SAVE_RESULTS = False
+SAVE_RESULTS = True
 
 SAMPLING_TIME = 0.02				# in [s]
-SIM_TIME = 10						# in [s]
-LD = 0.1
-KP = 2
+SIM_TIME = 20						# in [s]
+LD = 0.2
+KP = 1.5
 
 #####################################################################
 # load vehicle parameters
@@ -33,7 +33,7 @@ model = Dynamic(**params)
 #####################################################################
 # load track
 
-TRACK_NAME = 'ETHZMobil'
+TRACK_NAME = 'ETHZ'
 if TRACK_NAME == 'ETHZ':
 	track = ETHZ(reference='optimal')  		# ETHZ() or ETHZMobil()
 elif TRACK_NAME == 'ETHZMobil':
@@ -105,7 +105,8 @@ for idt in range(n_steps):
 	print("iteration: {}, time to solve: {:.2f}".format(idt, end-start))
 
 	# update current position with numerical integration (exact model)
-	x_next, dxdt_next = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts])
+	# x_next, dxdt_next = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts])
+	x_next, dxdt_next = model.sim_discrete(states[:,idt], inputs[:,idt].reshape(-1,1), Ts)
 	states[:,idt+1] = x_next[:,-1]
 	dstates[:,idt+1] = dxdt_next[:,-1]
 	Ffy[idt+1], Frx[idt+1], Fry[idt+1] = model.calc_forces(states[:,idt], inputs[:,idt])
