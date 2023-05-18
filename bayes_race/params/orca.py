@@ -32,9 +32,9 @@ def ORCA(control='pwm'):
 	min_pwm = -0.1 			# min PWM duty cycle
 	max_steer = 0.35 		# max steering angle [rad]
 	min_steer = -0.35 		# min steering angle [rad]
-	max_steer_roc = 0.05 	# max steering angle change [rad]
-	max_pwm_roc = 0.1		# max PWM duty cycle change
-	steer_delay = 3			# delay in steering command [time steps]
+	max_steer_roc = 0.2 	# max steering angle change [rad]
+	max_pwm_roc = 0.3		# max PWM duty cycle change
+	steer_delay = 1			# delay in steering command [time steps]
 	pwm_delay = 1			# delay in PWM command [time steps]
 
 	if control is 'pwm':

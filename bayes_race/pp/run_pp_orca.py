@@ -21,8 +21,8 @@ SAVE_RESULTS = True
 
 SAMPLING_TIME = 0.02				# in [s]
 SIM_TIME = 20						# in [s]
-LD = 0.4
-KP = 0.2
+LD = 0.2
+KP = 1.2
 
 #####################################################################
 # load vehicle parameters
