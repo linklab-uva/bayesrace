@@ -20,9 +20,9 @@ from bayes_race.pp import purePursuit
 SAVE_RESULTS = False
 
 SAMPLING_TIME = 0.02				# in [s]
-SIM_TIME = 10						# in [s]
-LD = 0.1
-KP = 2
+SIM_TIME = 20						# in [s]
+LD = 0.2
+KP = 1.5
 
 #####################################################################
 # load vehicle parameters

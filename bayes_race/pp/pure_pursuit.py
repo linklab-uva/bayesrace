@@ -30,4 +30,4 @@ def purePursuit(x0, LD, KP, track, params):
 	acc = KP * (vref - x0[3])
 	alpha = np.arctan2(goal[1] - x0[1], goal[0] - x0[0]) - x0[2]
 	steer = np.arctan2(2.0 * (params['lf']+params['lr']) * np.sin(alpha) / LD, 1.0)
-	return [acc, steer]
+	return [acc - x0[6], steer - x0[7]]
