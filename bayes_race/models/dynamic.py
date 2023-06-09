@@ -84,7 +84,7 @@ class Dynamic(Model):
 		vy = x[4]
 		omega = x[5]
 
-		Ffy, Frx, Fry = self.calc_forces(x)
+		Ffy, Frx, Fry = self.calc_forces(x, u)
 
 		dxdt = np.zeros(8)
 		dxdt[0] = vx*np.cos(psi) - vy*np.sin(psi)
