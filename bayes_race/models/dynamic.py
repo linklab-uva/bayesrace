@@ -52,6 +52,8 @@ class Dynamic(Model):
 		self.input_acc = input_acc
 		self.n_states = 8
 		self.n_inputs = 2
+		self.max_throttle_change = kwargs["max_rates"][0]
+		self.max_steer_change = kwargs["max_rates"][1]
 		Model.__init__(self)
 
 	def sim_continuous(self, x0, u, t):
@@ -73,8 +75,8 @@ class Dynamic(Model):
 
 	def _diffequation(self, t, x, u):
 		"""	write dynamics as first order ODE: dxdt = f(x(t))
-			x is a 6x1 vector: [x, y, psi, vx, vy, omega]^T
-			u is a 2x1 vector: [acc/pwm, steer]^T
+			x is a 8x1 vector: [x, y, psi, vx, vy, omega, throttle, steer]^T
+			u is a 2x1 vector: [acc/pwm change, steer change]^T
 		"""
 		steer = u[1] + x[7]
 		psi = x[2]
@@ -82,7 +84,7 @@ class Dynamic(Model):
 		vy = x[4]
 		omega = x[5]
 
-		Ffy, Frx, Fry = self.calc_forces(x, u)
+		Ffy, Frx, Fry = self.calc_forces(x)
 
 		dxdt = np.zeros(8)
 		dxdt[0] = vx*np.cos(psi) - vy*np.sin(psi)
@@ -179,7 +181,6 @@ class Dynamic(Model):
 		x[:,0] = x0
 		for ids in range(1, n_steps+1):
 			g = self._diffequation(None, x[:,ids-1], u[:,ids-1]).reshape(-1,)
-			print(Ts)
 			x[:6,ids] = x[:6,ids-1] + g[:6]*Ts
 			x[6:,ids] = x[6:,ids-1] + g[6:]
 			dxdt[:,ids] = self._diffequation(None, x[:,ids], u[:,ids-1])

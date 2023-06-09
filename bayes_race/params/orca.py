@@ -32,21 +32,26 @@ def ORCA(control='pwm'):
 	min_pwm = -0.1 			# min PWM duty cycle
 	max_steer = 0.35 		# max steering angle [rad]
 	min_steer = -0.35 		# min steering angle [rad]
-	max_steer_vel = 5. 		# max steering velocity [rad/s]
+	max_steer_roc = 0.05 	# max steering angle change [rad]
+	max_pwm_roc = 0.1		# max PWM duty cycle change
+	steer_delay = 3			# delay in steering command [time steps]
+	pwm_delay = 1			# delay in PWM command [time steps]
 
 	if control is 'pwm':
 		max_inputs = [max_pwm, max_steer]
 		min_inputs = [min_pwm, min_steer]
 
-		max_rates = [None, max_steer_vel]
-		min_rates = [None, -max_steer_vel]
+		max_rates = [max_pwm_roc, max_steer_roc]
+		min_rates = [-max_pwm_roc, -max_steer_roc]
+
+		delays = [pwm_delay, steer_delay]
 
 	elif control is 'acc':
 		max_inputs = [max_acc, max_steer]
 		min_inputs = [min_acc, min_steer]
 
-		max_rates = [None, max_steer_vel]
-		min_rates = [None, -max_steer_vel]
+		max_rates = [None, max_steer_roc]
+		min_rates = [None, -max_steer_roc]
 
 	else:
 		raise NotImplementedError(
@@ -75,10 +80,11 @@ def ORCA(control='pwm'):
 		'min_pwm': min_pwm,
 		'max_steer': max_steer,
 		'min_steer': min_steer,
-		'max_steer_vel': max_steer_vel,
+		'max_steer_vel': max_steer_roc,
 		'max_inputs': max_inputs,
 		'min_inputs': min_inputs,
 		'max_rates': max_rates,
 		'min_rates': min_rates,
+		'delays' : delays,
 		}
 	return params

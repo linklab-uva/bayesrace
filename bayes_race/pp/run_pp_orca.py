@@ -17,7 +17,7 @@ from bayes_race.pp import purePursuit
 #####################################################################
 # settings
 
-SAVE_RESULTS = False
+SAVE_RESULTS = True
 
 SAMPLING_TIME = 0.02				# in [s]
 SIM_TIME = 20						# in [s]
@@ -33,7 +33,7 @@ model = Dynamic(**params)
 #####################################################################
 # load track
 
-TRACK_NAME = 'ETHZMobil'
+TRACK_NAME = 'ETHZ'
 if TRACK_NAME == 'ETHZ':
 	track = ETHZ(reference='optimal')  		# ETHZ() or ETHZMobil()
 elif TRACK_NAME == 'ETHZMobil':
@@ -103,12 +103,25 @@ for idt in range(n_steps):
 	end = tm.time()
 	inputs[:,idt] = upp
 	print("iteration: {}, time to solve: {:.2f}".format(idt, end-start))
+	print("Throttle FB:", states[6,idt])
+	print("Steer FB:", states[7,idt])
+	print("Throttle CMD:", inputs[0,idt])
+	print("Steer CMD:", inputs[1,idt])
+
 
 	# update current position with numerical integration (exact model)
-	x_next, dxdt_next = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts])
+	# x_next, dxdt_next = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts])
+	if idt < params['delays'][0] and idt < params['delays'][1]:
+		x_next, dxdt_next = model.sim_discrete(states[:,idt], np.array([0,0]).reshape(-1,1), Ts)
+	elif idt < params['delays'][0]:
+		x_next, dxdt_next = model.sim_discrete(states[:,idt], np.array([0,inputs[1,idt - params['delays'][1]]]).reshape(-1,1), Ts)
+	elif idt < params['delays'][1]:
+		x_next, dxdt_next = model.sim_discrete(states[:,idt], np.array([inputs[0,idt - params['delays'][0]], 0]).reshape(-1,1), Ts)
+	else:
+		x_next, dxdt_next = model.sim_discrete(states[:,idt], np.array([inputs[0,idt - params['delays'][0]], inputs[1, idt - params['delays'][1]]]).reshape(-1,1), Ts)
 	states[:,idt+1] = x_next[:,-1]
 	dstates[:,idt+1] = dxdt_next[:,-1]
-	Ffy[idt+1], Frx[idt+1], Fry[idt+1] = model.calc_forces(states[:,idt], inputs[:,idt])
+	Ffy[idt+1], Frx[idt+1], Fry[idt+1] = model.calc_forces(states[:,idt])
 
 	# update plot
 	xyproj, _ = track.project(x=x0[0], y=x0[1], raceline=track.raceline)
