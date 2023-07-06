@@ -22,7 +22,7 @@ SAVE_RESULTS = True
 SAMPLING_TIME = 0.02				# in [s]
 SIM_TIME = 20						# in [s]
 LD = 0.2
-KP = 1.5
+KP = 0.6
 
 #####################################################################
 # load vehicle parameters
@@ -35,7 +35,7 @@ model = Dynamic(**params)
 
 TRACK_NAME = 'TMS'
 if TRACK_NAME == 'ETHZ':
-	track = ETHZ(reference='optimal')  		# ETHZ() or ETHZMobil()
+	track = ETHZ(reference='optimal')  		
 elif TRACK_NAME == 'ETHZMobil':
 	track = ETHZMobil(reference='optimal')  # ETHZ() or ETHZMobil()
 elif TRACK_NAME == 'TMS':
@@ -65,8 +65,9 @@ x_init = np.zeros(n_states)
 x_init[0], x_init[1] = track.x_init, track.y_init
 x_init[2] = track.psi_init
 x_init[3] = track.vx_init
-dstates[0,0] = x_init[3]
+dstates[3,0] = x_init[3]
 states[:,0] = x_init
+data_x = x_init
 print('starting at ({:.1f},{:.1f})'.format(x_init[0], x_init[1]))
 
 # dynamic plot
@@ -107,7 +108,7 @@ for idt in range(n_steps):
 	print("iteration: {}, time to solve: {:.2f}".format(idt, end-start))
 
 	# update current position with numerical integration (exact model)
-	x_next, dxdt_next = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts])
+	x_next, data_x = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts], data_x)
 	# if idt < params['delays'][0] and idt < params['delays'][1]:
 	# 	x_next, dxdt_next = model.sim_discrete(states[:,idt], np.array([0,0]).reshape(-1,1), Ts)
 	# elif idt < params['delays'][0]:
@@ -117,7 +118,7 @@ for idt in range(n_steps):
 	# else:
 	# 	x_next, dxdt_next = model.sim_discrete(states[:,idt], np.array([inputs[0,idt - params['delays'][0]], inputs[1, idt - params['delays'][1]]]).reshape(-1,1), Ts)
 	states[:,idt+1] = x_next[:,-1]
-	dstates[:,idt+1] = dxdt_next[:,-1]
+	dstates[:,idt+1] = data_x
 	Ffy[idt+1], Frx[idt+1], Fry[idt+1] = model.calc_forces(states[:,idt], inputs[:,idt])
 
 	# update plot

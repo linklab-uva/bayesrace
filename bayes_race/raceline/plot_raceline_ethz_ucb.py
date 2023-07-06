@@ -8,7 +8,7 @@ __email__ = 'achinj@seas.upenn.edu'
 
 import numpy as np
 
-from bayes_race.tracks import UCB, ETHZ, ETHZMobil
+from bayes_race.tracks import UCB, ETHZ, ETHZMobil, Rectangular, TMS
 from bayes_race.params import F110, ORCA
 from bayes_race.raceline import randomTrajectory
 from bayes_race.raceline import calcMinimumTimeSpeedInputs
@@ -21,11 +21,11 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 #####################################################################
 # which data
 
-SAVE_RESULTS = False
+SAVE_RESULTS = True
 
 # saved results 1
-savestr = '20200207165005' 
-TRACK_NAME = 'ETHZ'
+savestr = '20230627000239' 
+TRACK_NAME = 'TMS'
 
 # saved results 2
 # savestr = '20200207182156'
@@ -55,6 +55,16 @@ elif TRACK_NAME is 'UCB':
 	params = F110()
 	track = UCB()
 	NODES = [10, 32, 44, 67, 83, 100, 113, 127, 144, 160, 175, 191]
+	LASTIDX = 0
+elif TRACK_NAME is 'RECTANGULAR':
+	params = ORCA()
+	track = Rectangular(1.5, 3.0, 0.1)
+	NODES = [0, 1, 2, 3, 4]
+	LASTIDX = 0
+elif TRACK_NAME is 'TMS':
+	params = ORCA()
+	track = TMS()
+	NODES = range(0, 2900, 100)
 	LASTIDX = 0
 
 theta = track.theta_track[NODES]
@@ -159,8 +169,8 @@ ax.set_xlabel('x [m]')
 ax.set_ylabel('y [m]')
 
 if SAVE_RESULTS:
-	np.savez('results/{}_optimalxy-{}.npz'.format(track_name, savestr), x=x, y=y)
-	np.savez('results/{}_raceline-{}.npz'.format(track_name, savestr), x=x, y=y, time=time, speed=speed, inputs=inputs)
+	np.savez('results/{}_optimalxy-{}.npz'.format(TRACK_NAME, savestr), x=x, y=y)
+	np.savez('results/{}_raceline-{}.npz'.format(TRACK_NAME, savestr), x=x, y=y, time=time, speed=speed, inputs=inputs)
 	plt.savefig(filepath, dpi=600, bbox_inches='tight')
 
 #####################################################################

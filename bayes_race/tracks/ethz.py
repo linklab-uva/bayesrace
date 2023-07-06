@@ -125,3 +125,18 @@ class ETHZMobil(ETHZTrack):
 		self.y_init = self.y_raceline[0]
 		self.vx_init = 0.1	
 
+class TMS(ETHZTrack):
+	"Texas Motor Speedway"
+
+	def __init__(self, reference='center', longer=False):
+		track_width = 0.25
+		super(TMS, self).__init__(
+			track_id='TMS',
+			track_width=track_width,
+			reference=reference,
+			longer=longer,
+		)
+		self.psi_init = -np.pi/2
+		self.x_init = self.x_raceline[0]
+		self.y_init = self.y_raceline[0]
+		self.vx_init = 0.1	

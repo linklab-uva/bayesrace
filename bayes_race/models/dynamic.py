@@ -56,7 +56,7 @@ class Dynamic(Model):
 		self.max_steer_change = kwargs["max_rates"][1]
 		Model.__init__(self)
 
-	def sim_continuous(self, x0, u, t):
+	def sim_continuous(self, x0, u, t, data_x):
 		"""	simulates the nonlinear continuous model with given input vector
 			by numerical integration using 6th order Runge Kutta method
 			x0 is the initial state of size 6x1
@@ -66,12 +66,14 @@ class Dynamic(Model):
 		n_steps = u.shape[1]
 		x = np.zeros([8, n_steps+1])
 		dxdt = np.zeros([8, n_steps+1])
-		dxdt[:,0] = self._diffequation(None, x0, [0, 0])
+		dxdt[:,0] = self._diffequation(None, x0, u)
+		g = self._diffequation(None, data_x, u).reshape(-1,)
 		x[:,0] = x0
 		for ids in range(1, n_steps+1):
 			x[:,ids] = self._integrate(x[:,ids-1], u[:,ids-1], t[ids-1], t[ids])
 			dxdt[:,ids] = self._diffequation(None, x[:,ids], u[:,ids-1])
-		return x, dxdt
+		g[:6] *= t[1]
+		return x, data_x + g
 
 	def _diffequation(self, t, x, u):
 		"""	write dynamics as first order ODE: dxdt = f(x(t))
