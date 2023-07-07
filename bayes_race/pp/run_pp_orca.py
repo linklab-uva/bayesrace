@@ -33,7 +33,7 @@ model = Dynamic(**params)
 #####################################################################
 # load track
 
-TRACK_NAME = 'TMS'
+TRACK_NAME = 'ETHZ'
 if TRACK_NAME == 'ETHZ':
 	track = ETHZ(reference='optimal')  		
 elif TRACK_NAME == 'ETHZMobil':
@@ -54,7 +54,7 @@ n_inputs = model.n_inputs
 
 # initialize
 states = np.zeros([n_states, n_steps+1])
-dstates = np.zeros([n_states, n_steps+1])
+dstates = np.zeros([8, n_steps+1])
 inputs = np.zeros([n_inputs, n_steps])
 time = np.linspace(0, n_steps, n_steps+1)*Ts
 Ffy = np.zeros([n_steps+1])
@@ -67,7 +67,7 @@ x_init[2] = track.psi_init
 x_init[3] = track.vx_init
 dstates[3,0] = x_init[3]
 states[:,0] = x_init
-data_x = x_init
+data_x = [*x_init, 0.0, 0.0]
 print('starting at ({:.1f},{:.1f})'.format(x_init[0], x_init[1]))
 
 # dynamic plot

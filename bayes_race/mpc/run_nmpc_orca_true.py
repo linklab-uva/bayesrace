@@ -47,7 +47,7 @@ model = Dynamic(**params)
 #####################################################################
 # load track
 
-TRACK_NAME = 'ETHZ'
+TRACK_NAME = 'ETHZMobil'
 track = ETHZ(reference='optimal', longer=True)
 SIM_TIME = 8.5
 
@@ -70,7 +70,7 @@ nlp = setupNLP(horizon, Ts, COST_Q, COST_P, COST_R, params, model, track, track_
 
 # initialize
 states = np.zeros([n_states, n_steps+1])
-dstates = np.zeros([n_states, n_steps+1])
+dstates = np.zeros([8, n_steps+1])
 inputs = np.zeros([n_inputs, n_steps])
 time = np.linspace(0, n_steps, n_steps+1)*Ts
 Ffy = np.zeros([n_steps+1])
@@ -86,6 +86,7 @@ x_init[2] = track.psi_init
 x_init[3] = track.vx_init
 dstates[0,0] = x_init[3]
 states[:,0] = x_init
+data_x = [*x_init, 0.0, 0.0]
 print('starting at ({:.1f},{:.1f})'.format(x_init[0], x_init[1]))
 
 # dynamic plot
@@ -132,16 +133,16 @@ for idt in range(n_steps-horizon):
 	print("iter: {}, cost: {:.5f}, time: {:.2f}".format(idt, fval, end-start))
 
 	# update current position with numerical integration (exact model)
-	x_next, dxdt_next = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts])
+	x_next, data_x = model.sim_continuous(states[:,idt], inputs[:,idt].reshape(-1,1), [0, Ts], data_x)
 	states[:,idt+1] = x_next[:,-1]
-	dstates[:,idt+1] = dxdt_next[:,-1]
+	dstates[:,idt+1] = data_x
 	Ffy[idt+1], Frx[idt+1], Fry[idt+1] = model.calc_forces(states[:,idt], inputs[:,idt])
 
 	# forward sim to predict over the horizon
 	hstates[:,0] = x0
 	hstates2[:,0] = x0
 	for idh in range(horizon):
-		x_next, dxdt_next = model.sim_continuous(hstates[:,idh], umpc[:,idh].reshape(-1,1), [0, Ts])
+		x_next, data_x = model.sim_continuous(hstates[:,idh], umpc[:,idh].reshape(-1,1), [0, Ts], data_x)
 		hstates[:,idh+1] = x_next[:,-1]
 		hstates2[:,idh+1] = xmpc[:,idh+1]
 
