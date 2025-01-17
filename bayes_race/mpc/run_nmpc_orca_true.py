@@ -14,21 +14,21 @@ from matplotlib.gridspec import GridSpec
 
 from bayes_race.params import ORCA
 from bayes_race.models import Dynamic
-from bayes_race.tracks import ETHZ
+from bayes_race.tracks import ETHZMobil
 from bayes_race.mpc.planner import ConstantSpeed
 from bayes_race.mpc.nmpc import setupNLP
 
 #####################################################################
 # CHANGE THIS
 
-SAVE_RESULTS = False
+SAVE_RESULTS = True
 TRACK_CONS = False
 
 #####################################################################
 # default settings
 
 SAMPLING_TIME = 0.02
-HORIZON = 20
+HORIZON = 15
 COST_Q = np.diag([1, 1])
 COST_P = np.diag([0, 0])
 COST_R = np.diag([5/1000, 1])
@@ -48,8 +48,8 @@ model = Dynamic(**params)
 # load track
 
 TRACK_NAME = 'ETHZMobil'
-track = ETHZ(reference='optimal', longer=True)
-SIM_TIME = 8.5
+track = ETHZMobil(reference='optimal', longer=True)
+SIM_TIME = 6.5
 
 #####################################################################
 # extract data
@@ -72,6 +72,7 @@ nlp = setupNLP(horizon, Ts, COST_Q, COST_P, COST_R, params, model, track, track_
 states = np.zeros([n_states, n_steps+1])
 dstates = np.zeros([8, n_steps+1])
 inputs = np.zeros([n_inputs, n_steps])
+vrefs = np.zeros((n_steps+1))
 time = np.linspace(0, n_steps, n_steps+1)*Ts
 Ffy = np.zeros([n_steps+1])
 Frx = np.zeros([n_steps+1])
@@ -86,6 +87,7 @@ x_init[2] = track.psi_init
 x_init[3] = track.vx_init
 dstates[0,0] = x_init[3]
 states[:,0] = x_init
+vrefs[0] = track.vx_init
 data_x = [*x_init, 0.0, 0.0]
 print('starting at ({:.1f},{:.1f})'.format(x_init[0], x_init[1]))
 
@@ -128,6 +130,7 @@ for idt in range(n_steps-horizon):
 
 	start = tm.time()
 	umpc, fval, xmpc = nlp.solve(x0=x0, xref=xref[:2,:], uprev=uprev)
+	vref = track.v_raceline[projidx-1]
 	end = tm.time()
 	inputs[:,idt] = umpc[:,0]
 	print("iter: {}, cost: {:.5f}, time: {:.2f}".format(idt, fval, end-start))
@@ -137,6 +140,7 @@ for idt in range(n_steps-horizon):
 	states[:,idt+1] = x_next[:,-1]
 	dstates[:,idt+1] = data_x
 	Ffy[idt+1], Frx[idt+1], Fry[idt+1] = model.calc_forces(states[:,idt], inputs[:,idt])
+	vrefs[idt+1] = vref
 
 	# forward sim to predict over the horizon
 	hstates[:,0] = x0
@@ -185,6 +189,7 @@ if SAVE_RESULTS:
 		states=states,
 		dstates=dstates,
 		inputs=inputs,
+		vrefs=vrefs
 		)
 
 #####################################################################

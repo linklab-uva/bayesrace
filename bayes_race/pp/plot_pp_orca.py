@@ -11,6 +11,13 @@ import matplotlib.pyplot as plt
 from bayes_race.params import ORCA
 from bayes_race.tracks import ETHZ, ETHZMobil
 from bayes_race.models import Dynamic
+import matplotlib
+
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 22}
+
+matplotlib.rc('font', **font)
 
 #####################################################################
 # settings
@@ -19,10 +26,10 @@ SAVE_RESULTS = False
 
 CTYPE = 'PP'
 SAMPLING_TIME = 0.02
-TRACK_NAME = 'ETHZMobil'
+TRACK_NAME = 'ETHZ'
 
 filepath = 'track_training'
-N_SAMPLES = 301
+N_SAMPLES = 500
 
 #####################################################################
 # load vehicle parameters
@@ -33,7 +40,7 @@ model = Dynamic(**params)
 #####################################################################
 # load track
 
-track = ETHZMobil(reference='optimal')
+track = ETHZ(reference='optimal')
 
 #####################################################################
 # load inputs used to simulate Dynamic model
@@ -53,13 +60,13 @@ inputs[1] /= SAMPLING_TIME
 #####################################################################
 # plots
 
-plt.figure(figsize=(6,4))
+plt.figure(figsize=(12,8))
 plt.axis('equal')
 
-plt.plot(track.x_outer, track.y_outer, 'k', lw=0.5, alpha=0.5)
-plt.plot(track.x_inner, track.y_inner, 'k', lw=0.5, alpha=0.5)
-plt.plot(track.x_raceline, track.y_raceline, '--r', alpha=0.8, lw=1, label='raceline')
-plt.plot(states[0], states[1], 'k', lw=1, label='pure pursuit')
+plt.plot(-track.y_outer, track.x_outer, 'k', lw=2.0, alpha=0.5)
+plt.plot(-track.y_inner, track.x_inner, 'k', lw=2.0, alpha=0.5)
+# plt.plot(track.x_raceline, track.y_raceline, '--r', alpha=0.8, lw=1, label='raceline')
+# plt.plot(states[0], states[1], 'k', lw=1, label='pure pursuit')
 
 plt.xlabel('$x$ [m]')
 plt.ylabel('$y$ [m]')

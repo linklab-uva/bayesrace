@@ -120,10 +120,10 @@ class ETHZMobil(ETHZTrack):
 			reference=reference,
 			longer=longer,
 			)
-		self.psi_init = 0.
+		self.psi_init = -np.pi/8
 		self.x_init = self.x_raceline[0]
 		self.y_init = self.y_raceline[0]
-		self.vx_init = 0.1	
+		self.vx_init = 1.0	
 
 class TMS(ETHZTrack):
 	"Texas Motor Speedway"

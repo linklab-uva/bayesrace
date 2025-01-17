@@ -8,6 +8,8 @@ __email__ = 'achinj@seas.upenn.edu'
 import time as tm
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+import os
 
 from bayes_race.params import ORCA
 from bayes_race.models import Dynamic
@@ -20,9 +22,16 @@ from bayes_race.pp import purePursuit
 SAVE_RESULTS = True
 
 SAMPLING_TIME = 0.02				# in [s]
-SIM_TIME = 20						# in [s]
+SIM_TIME = 20					# in [s]
 LD = 0.2
 KP = 0.6
+
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 22}
+
+matplotlib.rc('font', **font)
+
 
 #####################################################################
 # load vehicle parameters
@@ -33,7 +42,7 @@ model = Dynamic(**params)
 #####################################################################
 # load track
 
-TRACK_NAME = 'ETHZ'
+TRACK_NAME = 'ETHZMobil'
 if TRACK_NAME == 'ETHZ':
 	track = ETHZ(reference='optimal')  		
 elif TRACK_NAME == 'ETHZMobil':
@@ -56,6 +65,7 @@ n_inputs = model.n_inputs
 states = np.zeros([n_states, n_steps+1])
 dstates = np.zeros([8, n_steps+1])
 inputs = np.zeros([n_inputs, n_steps])
+vrefs = np.zeros((n_steps+1))
 time = np.linspace(0, n_steps, n_steps+1)*Ts
 Ffy = np.zeros([n_steps+1])
 Frx = np.zeros([n_steps+1])
@@ -67,6 +77,7 @@ x_init[2] = track.psi_init
 x_init[3] = track.vx_init
 dstates[3,0] = x_init[3]
 states[:,0] = x_init
+vrefs[0] = track.vx_init
 data_x = [*x_init, 0.0, 0.0]
 print('starting at ({:.1f},{:.1f})'.format(x_init[0], x_init[1]))
 
@@ -81,19 +92,21 @@ plt.xlabel('x [m]')
 plt.ylabel('y [m]')
 plt.legend()
 
-plt.figure()
-plt.grid(True)
-ax2 = plt.gca()
-LnFfy, = ax2.plot(0, 0, label='Ffy')
-LnFrx, = ax2.plot(0, 0, label='Frx')
-LnFry, = ax2.plot(0, 0, label='Fry')
-plt.xlim([0, SIM_TIME])
-plt.ylim([-params['mass']*9.81, params['mass']*9.81])
-plt.xlabel('time [s]')
-plt.ylabel('force [N]')
-plt.legend()
+# plt.figure()
+# plt.grid(True)
+# ax2 = plt.gca()
+# LnFfy, = ax2.plot(0, 0, label='Ffy')
+# LnFrx, = ax2.plot(0, 0, label='Frx')
+# LnFry, = ax2.plot(0, 0, label='Fry')
+# plt.xlim([0, SIM_TIME])
+# plt.ylim([-params['mass']*9.81, params['mass']*9.81])
+# plt.xlabel('time [s]')
+# plt.ylabel('force [N]')
+# plt.legend()
 plt.ion()
 plt.show()
+os.mkdir("trajs")
+# os.mkdir("controls")
 
 # main simulation loop
 for idt in range(n_steps):
@@ -103,6 +116,7 @@ for idt in range(n_steps):
 
 	start = tm.time()
 	upp = purePursuit(x0, LD, KP, track, params)
+	vref = upp[0] / KP + x0[3]
 	end = tm.time()
 	inputs[:,idt] = upp
 	print("iteration: {}, time to solve: {:.2f}".format(idt, end-start))
@@ -120,6 +134,7 @@ for idt in range(n_steps):
 	states[:,idt+1] = x_next[:,-1]
 	dstates[:,idt+1] = data_x
 	Ffy[idt+1], Frx[idt+1], Fry[idt+1] = model.calc_forces(states[:,idt], inputs[:,idt])
+	vrefs[idt+1] = vref
 
 	# update plot
 	xyproj, _ = track.project(x=x0[0], y=x0[1], raceline=track.raceline)
@@ -130,14 +145,15 @@ for idt in range(n_steps):
 	LnP.set_xdata(xyproj[0])
 	LnP.set_ydata(xyproj[1])
 
-	LnFfy.set_xdata(time[:idt+1])
-	LnFfy.set_ydata(Ffy[:idt+1])
+	# LnFfy.set_xdata(time[:idt+1])
+	# LnFfy.set_ydata(Ffy[:idt+1])
 
-	LnFrx.set_xdata(time[:idt+1])
-	LnFrx.set_ydata(Frx[:idt+1])
+	# LnFrx.set_xdata(time[:idt+1])
+	# LnFrx.set_ydata(Frx[:idt+1])
 
-	LnFry.set_xdata(time[:idt+1])
-	LnFry.set_ydata(Fry[:idt+1])
+	# LnFry.set_xdata(time[:idt+1])
+	# LnFry.set_ydata(Fry[:idt+1])
+	plt.savefig(os.path.join("trajs/", '{:0>4}.png'.format(idt)), ax=ax)
 
 	plt.pause(Ts/100)
 
@@ -153,6 +169,7 @@ if SAVE_RESULTS:
 		states=states,
 		dstates=dstates,
 		inputs=inputs,
+		vrefs=vrefs
 		)
 
 #####################################################################

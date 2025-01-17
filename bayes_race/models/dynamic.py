@@ -22,7 +22,7 @@ from bayes_race.params import F110
 class Dynamic(Model):
 
 	def __init__(self, lf, lr, mass, Iz, Cf, Cr, 
-				 Bf=None, Br=None, Df=None, Dr=None,
+				 Bf=None, Br=None, Df=None, Dr=None, Ef=None, Er=None, Shf=None, Svf=None, Shr=None, Svr=None,
 				 Cm1=None, Cm2=None, Cr0=None, Cr2=None, 
 				 input_acc=False, **kwargs):
 		"""	specify model params here
@@ -40,6 +40,13 @@ class Dynamic(Model):
 		self.Br = Br
 		self.Df = Df
 		self.Dr = Dr
+		self.Ef = Ef
+		self.Er = Er
+
+		self.Shf = Shf
+		self.Svf = Svf
+		self.Shr = Shr
+		self.Svr = Svr
 
 		self.Cm1 = Cm1
 		self.Cm2 = Cm2
@@ -125,10 +132,10 @@ class Dynamic(Model):
 				pwm = u[0]
 				Frx = (self.Cm1-self.Cm2*vx)*pwm - self.Cr0 - self.Cr2*(vx**2)
 
-			alphaf = steer - np.arctan2((self.lf*omega + vy), abs(vx))
-			alphar = np.arctan2((self.lr*omega - vy), abs(vx))
-			Ffy = self.Df * np.sin(self.Cf * np.arctan(self.Bf * alphaf))
-			Fry = self.Dr * np.sin(self.Cr * np.arctan(self.Br * alphar))
+			alphaf = steer - np.arctan2((self.lf*omega + vy), abs(vx)) + self.Shf
+			alphar = np.arctan2((self.lr*omega - vy), abs(vx)) + self.Shr
+			Ffy = self.Svf + self.Df * np.sin(self.Cf * np.arctan(self.Bf * alphaf - self.Ef * (self.Bf * alphaf - np.arctan(self.Bf * alphaf))))
+			Fry = self.Svr + self.Dr * np.sin(self.Cr * np.arctan(self.Br * alphar - self.Er * (self.Br * alphar - np.arctan(self.Br * alphar))))
 		if return_slip:
 			return Ffy, Frx, Fry, alphaf, alphar
 		else:

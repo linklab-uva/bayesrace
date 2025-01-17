@@ -14,12 +14,19 @@ def ORCA(control='pwm'):
 	lr = 0.033
 	mass = 0.041
 	Iz = 27.8e-6
-	Bf = 2.579
+	Bf = 5.579
 	Cf = 1.2
 	Df = 0.192
-	Br = 3.3852
+	Ef = -0.083
+	Br = 5.3852
 	Cr = 1.2691
 	Dr = 0.1737
+	Er = -0.019
+
+	Shf = -0.0013
+	Svf = 0.00043
+	Shr = -0.00376
+	Svr = 0.00091
 
 	Cm1 = 0.287
 	Cm2 = 0.0545
@@ -65,6 +72,12 @@ def ORCA(control='pwm'):
 		'Cr': Cr,
 		'Df': Df,
 		'Dr': Dr,
+		'Ef' : Ef,
+		'Er' : Er,
+		'Shf' : Shf,
+		'Svf' : Svf,
+		'Shr' : Shr,
+		'Svr' : Svr,
 		'Cm1': Cm1,
 		'Cm2': Cm2,
 		'Cr0': Cr0,
